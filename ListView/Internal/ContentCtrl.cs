@@ -33,9 +33,9 @@ namespace ListView.Internal
         {
             get{
                 if (dir == Direction.Vertical)
-                    return Mathf.CeilToInt(TotalHeight / SingleHeight);
+                    return Mathf.CeilToInt(TotalHeight / SingleHeight) + 1;
                 else
-                    return Mathf.CeilToInt(TotalWidth / SingleWidth);
+                    return Mathf.CeilToInt(TotalWidth / SingleWidth) + 1;
             }
         }
 

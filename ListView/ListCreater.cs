@@ -131,7 +131,7 @@ namespace ListView
         private void ShowArea(int start, int end)
         {
             ///移出超出顶部
-            if (start > _startID)
+            if (start > _startID || end > _endID)
             {
                 var count = start - _startID;
                 ///当移动在可视范围内，连续移动
@@ -146,7 +146,7 @@ namespace ListView
                 }
             }
             ///移除超出底部
-            if (end < _endID)
+            if (end < _endID|| start <_startID)
             {
                 var count = _endID - end;
                 ///当移动在可视范围内，连续移动
