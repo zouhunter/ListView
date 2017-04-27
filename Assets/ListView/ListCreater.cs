@@ -172,7 +172,7 @@ namespace ListView
             if (!head && _endID == totalCount) return null;
             if (head && _startID == 0) return null;
             Debug.Log("Show:" + (head ? "Head" : "End"));
-            T scr = _objectPool.GetPoolObject(pfb, parent, false);
+            T scr = _objectPool.GetPoolObject(pfb, parent);
             _createdItems.Insert(!head ? _createdItems.Count : 0, scr);
             scr.Id = !head ? ++_endID : --_startID;
             _contentCtrl.SetPosition(scr);
@@ -271,7 +271,7 @@ namespace ListView
 
             for (int i = 0; i < _contentCtrl.BestCount; i++)
             {
-                T item = _objectPool.GetPoolObject(pfb, parent, false);
+                T item = _objectPool.GetPoolObject(pfb, parent);
                 _createdItems.Add(item);
                 item.Id = _startID + i;
                 _contentCtrl.SetPosition(item);

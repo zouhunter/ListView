@@ -7,7 +7,7 @@ namespace ListView.Internal
     {
         private List<T> objectPool = new List<T>();
 
-        public T GetPoolObject(T pfb, Transform parent, bool world, bool resetLocalPosition = true, bool resetLocalScale = false, bool activepfb = false)
+        public T GetPoolObject(T pfb, Transform parent)
         {
             pfb.gameObject.SetActive(true);
             //遍历每数组，得到一个隐藏的对象
@@ -16,23 +16,15 @@ namespace ListView.Internal
                 if (!objectPool[i].gameObject.activeSelf)
                 {
                     objectPool[i].gameObject.SetActive(true);
-                    objectPool[i].transform.SetParent(parent, world);
-                    if (resetLocalPosition)
-                    {
-                        objectPool[i].transform.localPosition = Vector3.zero;
-                    }
-                    if (resetLocalScale)
-                    {
-                        objectPool[i].transform.localScale = Vector3.one;
-                    }
-                    pfb.gameObject.SetActive(activepfb);
+                    objectPool[i].transform.SetParent(parent, false);
+                    pfb.gameObject.SetActive(false);
                     return objectPool[i];
                 }
             }
             //当没有隐藏对象时，创建一个并返回
-            T currGo = CreateOne(pfb, parent, world, resetLocalPosition, resetLocalScale);
+            T currGo = CreateOne(pfb, parent);
             objectPool.Add(currGo);
-            pfb.gameObject.SetActive(activepfb);
+            pfb.gameObject.SetActive(false);
             return currGo;
         }
 
@@ -45,19 +37,11 @@ namespace ListView.Internal
             go.gameObject.SetActive(false);
         }
 
-        public T CreateOne(T pfb, Transform parent, bool world, bool resetLocalPositon, bool resetLocalScale)
+        public T CreateOne(T pfb, Transform parent)
         {
             T currentGo = GameObject.Instantiate(pfb);
             currentGo.name = pfb.name;
-            currentGo.transform.SetParent(parent, world);
-            if (resetLocalPositon)
-            {
-                currentGo.transform.localPosition = Vector3.zero;
-            }
-            if (resetLocalScale)
-            {
-                currentGo.transform.localScale = Vector3.one;
-            }
+            currentGo.transform.SetParent(parent, false);
             return currentGo;
         }
     }
