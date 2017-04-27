@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-namespace ListView
+namespace ListView.Internal
 {
     public class ContentCtrl<T> where T : MonoBehaviour, IListItem
     {
@@ -32,36 +32,44 @@ namespace ListView
         public int BestCount
         {
             get{
-                return Mathf.CeilToInt(TotalHeight / SingleHeight);
+                if (dir == Direction.Vertical)
+                    return Mathf.CeilToInt(TotalHeight / SingleHeight);
+                else
+                    return Mathf.CeilToInt(TotalWidth / SingleWidth);
             }
         }
-        private float _totaltop;
-        public float TotalTop
+
+        private float _totalWidth;
+        public float TotalWidth
         {
             get
             {
-                viewport.GetWorldCorners(viewPortWorldPos);
-                _totaltop = viewPortWorldPos[1].y;
-                return _totaltop;
+                viewport.GetLocalCorners(viewPortWorldPos);
+                _totalWidth = viewPortWorldPos[2].x - viewPortWorldPos[1].x;
+                return _totalWidth;
             }
-           
         }
-        private float _totaldown;
-        public float TotalDown
+        private float _singleWidth;
+        public float SingleWidth
         {
             get
             {
-                viewport.GetWorldCorners(viewPortWorldPos);
-                _totaldown = viewPortWorldPos[0].y;
-                return _totaldown;
+                childItem.GetWorldCorners(itemWorldPos);
+                _singleWidth = itemWorldPos[2].x - itemWorldPos[1].x;
+                return _singleWidth;
             }
         }
+ 
         private int count;
-        public ContentCtrl(ScrollRect scrollRect, RectTransform childItem)
+        private Direction dir;
+
+        public ContentCtrl(ScrollRect scrollRect, RectTransform child, Direction dir)
         {
             this.scrollRect = scrollRect;
-            this.childItem = childItem;
+            this.childItem = child;
+            this.dir = dir;
         }
+
         /// <summary>
         /// 设置显示区域大小
         /// </summary>
@@ -69,7 +77,8 @@ namespace ListView
         public void SetContent(int count)
         {
             this.count = count;
-            content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, SingleHeight * count);
+            content.SetSizeWithCurrentAnchors(dir == Direction.Vertical ? RectTransform.Axis.Vertical: RectTransform.Axis.Horizontal,
+                (dir == Direction.Vertical ? SingleHeight :SingleWidth)* count);
         }
         /// <summary>
         /// 按比例获取区域
@@ -79,6 +88,7 @@ namespace ListView
         /// <param name="endID"></param>
         public void CalcuateIndex(float ratio,int maxcount,out int startID,out int endID)
         {
+            //float ratio1 = dir == Direction.Vertical ? 1 - ratio : ratio;
             startID = Mathf.FloorToInt((1-ratio) * (count - BestCount + 1));
             startID = startID < 0 ? 0 : startID;
             endID = BestCount + startID - 1;
@@ -91,8 +101,17 @@ namespace ListView
         /// <param name="item"></param>
         public void SetPosition(T item)
         {
-            Vector3 startPos = Vector3.down * SingleHeight * 0.5f;
-            item.transform.localPosition = Vector3.down * item.Id *SingleHeight + startPos;
+            if (dir == Direction.Vertical)
+            {
+                Vector3 startPos = Vector3.down * SingleHeight * 0.5f;
+                item.transform.localPosition = Vector3.down * item.Id * SingleHeight + startPos;
+            }
+            else
+            {
+                Vector3 startPos = Vector3.right * SingleWidth * 0.5f;
+                item.transform.localPosition = Vector3.right * item.Id * SingleWidth + startPos;
+            }
+
         }
     }
 }

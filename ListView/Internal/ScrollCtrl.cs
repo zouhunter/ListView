@@ -10,33 +10,41 @@ namespace ListView.Internal
         private Scrollbar verticalScrollbar { get { return scrollRect.verticalScrollbar; } }
         private Scrollbar horizontalScrollbar { get { return scrollRect.horizontalScrollbar; } }
         public UnityEngine.Events.UnityAction<float> onUpdateScroll;
+        private Direction dir;
 
-        public ScrollCtrl(ScrollRect scrollRect)
+        public ScrollCtrl(ScrollRect scrollRect, Direction dir)
         {
             this.scrollRect = scrollRect;
+            this.dir = dir;
             RegistScrollEvent();
         }
+
         private void RegistScrollEvent()
         {
-            if (verticalScrollbar != null)
+            switch (dir)
             {
-                verticalScrollbar.value = 1;
-                verticalScrollbar.onValueChanged.AddListener(UpdateItems);
-            }
-            if (horizontalScrollbar != null)
-            {
-
+                case Direction.Vertical:
+                    verticalScrollbar.onValueChanged.AddListener(UpdateItems);
+                    break;
+                case Direction.Horizontal:
+                    horizontalScrollbar.onValueChanged.AddListener(UpdateItems);
+                    break;
+                default:
+                    break;
             }
         }
         private void UpdateItems(float ratio)
         {
-            if (onUpdateScroll != null) onUpdateScroll.Invoke(ratio);
+            if (onUpdateScroll != null) onUpdateScroll.Invoke(dir==Direction.Vertical ? ratio:1-ratio);
         }
 
-        public float ViewPort
+        public float NormalizedPosition
         {
-            get { return scrollRect.verticalNormalizedPosition; }
-            set { scrollRect.verticalNormalizedPosition = value; }
+            get { return dir == Direction.Vertical ? scrollRect.verticalNormalizedPosition: 1 - scrollRect.horizontalNormalizedPosition; }
+            set { if (dir == Direction.Vertical)
+                    scrollRect.verticalNormalizedPosition = value;
+                else scrollRect.horizontalNormalizedPosition = 1 - value;
+            }
         }
     }
 }

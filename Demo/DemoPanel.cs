@@ -14,12 +14,12 @@ public class DemoPanel : MonoBehaviour
     [SerializeField]
     private DemoItem m_itemPfb;
     private ListCreater<DemoItem> creater;
-
+    public Direction direction;
     public int datacount;
 
     private void Awake()
     {
-        creater = new ListView.ListCreater<global::DemoItem>(m_scrollRect, m_itemPfb);
+        creater = new ListView.ListCreater<global::DemoItem>(m_scrollRect, m_itemPfb, direction);
         creater.onVisiable = OnCreateDemoItem;
         creater.CreateItemsAsync(datacount);
         m_insert.onClick.AddListener(InsertAnElement);
