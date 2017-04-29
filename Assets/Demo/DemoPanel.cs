@@ -13,15 +13,15 @@ public class DemoPanel : MonoBehaviour
     private ScrollRect m_scrollRect;
     [SerializeField]
     private DemoItem m_itemPfb;
-    private ListCreater<DemoItem> creater;
+    private AsyncListCreater<DemoItem> creater;
     public Direction direction;
     public int datacount;
 
     private void Awake()
     {
-        creater = new ListView.ListCreater<global::DemoItem>(m_scrollRect, m_itemPfb, direction);
-        creater.onVisiable = OnCreateDemoItem;
-        creater.CreateItemsAsync(datacount);
+        creater = new ListView.AsyncListCreater<global::DemoItem>(m_scrollRect, m_itemPfb, direction);
+        creater.onVisiable += OnCreateDemoItem;
+        creater.CreateItems(datacount);
         m_insert.onClick.AddListener(InsertAnElement);
     }
 

@@ -8,15 +8,14 @@ using ListView.Internal;
 
 namespace ListView
 {
-    public class ListCreater<T> where T : MonoBehaviour, IListItem
+    public class AsyncListCreater<T> : IListCreater<T> where T : MonoBehaviour, IListItem
     {
         public List<T> VisiableItems { get { return _createdItems; } }
 
-        public UnityAction<T> onVisiable;
-        public UnityAction<T> onInViesiable;
+        public event UnityAction<T> onVisiable;
+        public event UnityAction<T> onInViesiable;
 
         private ScrollRect scrollRect;
-        private RectTransform parent { get { return scrollRect.content; } }
 
         private T pfb { get; set; }
         private List<T> _createdItems = new List<T>();
@@ -27,7 +26,7 @@ namespace ListView
         private int _startID;
         private int _endID;
         private Direction dir;
-        public ListCreater(ScrollRect scrollRect, T pfb,Direction dir)
+        public AsyncListCreater(ScrollRect scrollRect, T pfb,Direction dir)
         {
             Debug.Assert(scrollRect);
             Debug.Assert(pfb);
@@ -36,13 +35,13 @@ namespace ListView
             this.pfb = pfb;
             pfb.gameObject.SetActive(false);
 
-            _objectPool = new ObjectPool<T>();
+            _objectPool = new ObjectPool<T>(scrollRect.content,pfb);
             _contentCtrl = new ContentCtrl<T>(scrollRect, pfb.GetComponent<RectTransform>(),dir);
             _scrollCtrl = new ScrollCtrl<T>(scrollRect,dir);
             _scrollCtrl.onUpdateScroll = UpdateItems;
         }
 
-        public void CreateItemsAsync(int totalCount)
+        public void CreateItems(int totalCount)
         {
             _scrollCtrl.NormalizedPosition = 1;
             scrollRect.StartCoroutine(DelyCreate(totalCount));
@@ -92,7 +91,7 @@ namespace ListView
         public void RemoveItem(T item)
         {
             _contentCtrl.SetContent(--totalCount);
-            _objectPool.SavePoolObject(item, false);
+            _objectPool.SavePoolObject(item);
             _createdItems.Remove(item);
             if (onInViesiable != null) onInViesiable.Invoke(item);
             for (int i = 0; i < _createdItems.Count; i++)
@@ -172,7 +171,7 @@ namespace ListView
             if (!head && _endID == totalCount) return null;
             if (head && _startID == 0) return null;
             Debug.Log("Show:" + (head ? "Head" : "End"));
-            T scr = _objectPool.GetPoolObject(pfb, parent);
+            T scr = _objectPool.GetPoolObject();
             _createdItems.Insert(!head ? _createdItems.Count : 0, scr);
             scr.Id = !head ? ++_endID : --_startID;
             _contentCtrl.SetPosition(scr);
@@ -199,7 +198,7 @@ namespace ListView
                 item = _createdItems[_createdItems.Count - 1];
                 _endID--;
             }
-            _objectPool.SavePoolObject(item, false);
+            _objectPool.SavePoolObject(item);
             _createdItems.Remove(item);
             if (onInViesiable != null) onInViesiable.Invoke(item);
             return item;
@@ -266,12 +265,12 @@ namespace ListView
                 }
                 _createdItems.Remove(item);
                 if (onInViesiable != null) onInViesiable.Invoke(item);
-                _objectPool.SavePoolObject(item, false);
+                _objectPool.SavePoolObject(item);
             }
 
             for (int i = 0; i < _contentCtrl.BestCount; i++)
             {
-                T item = _objectPool.GetPoolObject(pfb, parent);
+                T item = _objectPool.GetPoolObject();
                 _createdItems.Add(item);
                 item.Id = _startID + i;
                 _contentCtrl.SetPosition(item);
