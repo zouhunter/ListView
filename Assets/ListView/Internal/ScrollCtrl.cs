@@ -7,8 +7,6 @@ namespace ListView.Internal
     public class ScrollCtrl<T> where T : MonoBehaviour, IListItem
     {
         private ScrollRect scrollRect;
-        private Scrollbar verticalScrollbar { get { return scrollRect.verticalScrollbar; } }
-        private Scrollbar horizontalScrollbar { get { return scrollRect.horizontalScrollbar; } }
         public UnityEngine.Events.UnityAction<float> onUpdateScroll;
         private Direction dir;
 
@@ -18,20 +16,23 @@ namespace ListView.Internal
             this.dir = dir;
             RegistScrollEvent();
         }
-
         private void RegistScrollEvent()
         {
-            switch (dir)
+            scrollRect.onValueChanged.AddListener((vec) =>
             {
-                case Direction.Vertical:
-                    verticalScrollbar.onValueChanged.AddListener(UpdateItems);
-                    break;
-                case Direction.Horizontal:
-                    horizontalScrollbar.onValueChanged.AddListener(UpdateItems);
-                    break;
-                default:
-                    break;
-            }
+                switch (dir)
+                {
+                    case Direction.Vertical:
+                        UpdateItems(vec.y);
+                        break;
+                    case Direction.Horizontal:
+                        UpdateItems(vec.x);
+                        break;
+                    default:
+                        break;
+                }
+            });
+            
         }
         private void UpdateItems(float ratio)
         {
