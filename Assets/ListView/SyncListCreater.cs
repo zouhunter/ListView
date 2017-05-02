@@ -15,7 +15,6 @@ namespace ListView
         Transform parent { get; set; }
         T pfb { get; set; }
         private ObjectPool<T> _objectManager;
-        private bool isword;
         List<T> createdItems = new List<T>();
         public SyncListItemCreater(Transform parent, T pfb)
         {
@@ -23,7 +22,6 @@ namespace ListView
             this.pfb = pfb;
             pfb.gameObject.SetActive(false);
             _objectManager = new ObjectPool<T>(parent,pfb);
-            isword = !parent.GetComponent<RectTransform>();
         }
 
         public void CreateItems(int length)

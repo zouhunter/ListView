@@ -21,12 +21,9 @@ namespace ListView.Internal
                 return _totalHeight;
             }
         }
-        private float _singleHeight;
         public float SingleHeight {
             get {
-                childItem.GetWorldCorners(itemWorldPos);
-                _singleHeight = itemWorldPos[1].y - itemWorldPos[0].y;
-                return _singleHeight;
+                return childItem.rect.height;
             }
         }
         public int BestCount
@@ -49,14 +46,11 @@ namespace ListView.Internal
                 return _totalWidth;
             }
         }
-        private float _singleWidth;
         public float SingleWidth
         {
             get
             {
-                childItem.GetWorldCorners(itemWorldPos);
-                _singleWidth = itemWorldPos[2].x - itemWorldPos[1].x;
-                return _singleWidth;
+                return childItem.rect.width;
             }
         }
  
@@ -77,8 +71,8 @@ namespace ListView.Internal
         public void SetContent(int count)
         {
             this.count = count;
-            content.SetSizeWithCurrentAnchors(dir == Direction.Vertical ? RectTransform.Axis.Vertical: RectTransform.Axis.Horizontal,
-                (dir == Direction.Vertical ? SingleHeight :SingleWidth)* count);
+            content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, SingleHeight * (dir== Direction.Vertical ? count:1));
+            content.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, SingleWidth * (dir == Direction.Horizontal ? count : 1));
         }
         /// <summary>
         /// 按比例获取区域

@@ -26,7 +26,7 @@ namespace ListView
         private int _startID;
         private int _endID;
         private Direction dir;
-        public AsyncListCreater(ScrollRect scrollRect, T pfb,Direction dir)
+        public AsyncListCreater(ScrollRect scrollRect, T pfb, Direction dir)
         {
             Debug.Assert(scrollRect);
             Debug.Assert(pfb);
@@ -35,10 +35,9 @@ namespace ListView
             this.pfb = pfb;
             pfb.gameObject.SetActive(false);
 
-            _objectPool = new ObjectPool<T>(scrollRect.content,pfb);
-            _contentCtrl = new ContentCtrl<T>(scrollRect, pfb.GetComponent<RectTransform>(),dir);
-            _scrollCtrl = new ScrollCtrl<T>(scrollRect,dir);
-            _scrollCtrl.onUpdateScroll = UpdateItems;
+            _objectPool = new ObjectPool<T>(scrollRect.content, pfb);
+            _contentCtrl = new ContentCtrl<T>(scrollRect, pfb.GetComponent<RectTransform>(), dir);
+            _scrollCtrl = new ScrollCtrl<T>(scrollRect, dir);
         }
 
         public void CreateItems(int totalCount)
@@ -50,9 +49,9 @@ namespace ListView
         IEnumerator DelyCreate(int totalCount)
         {
             ClearOldItems();
-            yield return new WaitForEndOfFrame();
             this.totalCount = totalCount;
             _contentCtrl.SetContent(totalCount);
+            yield return new WaitForEndOfFrame();
             if (_contentCtrl.BestCount >= 0 || totalCount >= 0)
             {
                 this._startID = 0;
@@ -63,14 +62,18 @@ namespace ListView
                     ShowAnItem(false);
                 }
             }
+            _scrollCtrl.onUpdateScroll = UpdateItems;
         }
 
-        public void UpdateItems(float ratio)
+        private void UpdateItems(float ratio)
         {
-            int start;
-            int end;
-            _contentCtrl.CalcuateIndex(ratio,totalCount, out start, out end);
-            ShowArea(start, end);
+            if (totalCount != 0)
+            {
+                int start;
+                int end;
+                _contentCtrl.CalcuateIndex(ratio, totalCount, out start, out end);
+                ShowArea(start, end);
+            }
         }
 
         public void AddItem()
@@ -106,7 +109,7 @@ namespace ListView
             _endID--;
             int start;
             int end;
-            _contentCtrl.CalcuateIndex(_scrollCtrl.NormalizedPosition,totalCount, out start, out end);
+            _contentCtrl.CalcuateIndex(_scrollCtrl.NormalizedPosition, totalCount, out start, out end);
             if (end > _endID)
             {
                 ShowAnItem(false);
@@ -119,12 +122,12 @@ namespace ListView
 
         public void ClearOldItems()
         {
-            foreach (var item in _createdItems)
-            {
-                RemoveItem(item);
+            _scrollCtrl.onUpdateScroll = null;
+            foreach (var item in _createdItems){
+                if (onInViesiable != null) onInViesiable.Invoke(item);
             }
+            _objectPool.DeleteAll();
             _createdItems.Clear();
-            totalCount = 0;
         }
 
         private void ShowArea(int start, int end)
@@ -145,7 +148,7 @@ namespace ListView
                 }
             }
             ///移除超出底部
-            if (end < _endID|| start <_startID)
+            if (end < _endID || start < _startID)
             {
                 var count = _endID - end;
                 ///当移动在可视范围内，连续移动

@@ -49,5 +49,12 @@ namespace ListView.Internal
             currentGo.transform.SetParent(parent, false);
             return currentGo;
         }
+        public void DeleteAll()
+        {
+            foreach (var item in objectPool) {
+                GameObject.Destroy(item.gameObject);
+            }
+            objectPool.Clear();
+        }
     }
 }
