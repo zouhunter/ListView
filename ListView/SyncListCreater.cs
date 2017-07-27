@@ -11,11 +11,11 @@ namespace ListView
     {
         public event UnityAction<T> onVisiable;
         public event UnityAction<T> onInViesiable;
-        public List<T> CreatedItems { get { return createdItems; } }
+        public List<T> CreatedItems { get { return _createdItems; } }
         Transform parent { get; set; }
         T pfb { get; set; }
         private ObjectPool<T> _objectManager;
-        List<T> createdItems = new List<T>();
+        List<T> _createdItems = new List<T>();
         public SyncListItemCreater(Transform parent, T pfb)
         {
             this.parent = parent;
@@ -34,8 +34,9 @@ namespace ListView
             {
                 go = _objectManager.GetPoolObject();
                 T scr = go.GetComponent<T>();
+                scr.Id = i;
                 if (onVisiable != null) onVisiable.Invoke(scr);
-                createdItems.Add(scr);
+                _createdItems.Add(scr);
             }
         }
 
@@ -44,20 +45,28 @@ namespace ListView
             if (pfb == null) return;
             T scr;
             scr = _objectManager.GetPoolObject();
-            createdItems.Add(scr);
+            scr.Id = CreatedItems.Count;
+            _createdItems.Add(scr);
         }
 
         public void RemoveItem(T item)
         {
             if (onInViesiable != null) onInViesiable.Invoke(item);
-            createdItems.Remove(item);
+            for (int i = 0; i < _createdItems.Count; i++)
+            {
+                if (_createdItems[i].Id > item.Id)
+                {
+                    _createdItems[i].Id--;
+                }
+            }
+            _createdItems.Remove(item);
             _objectManager.SavePoolObject(item);
         }
 
         public void ClearOldItems()
         {
-            while(createdItems.Count > 0) {
-                RemoveItem(createdItems[0]);
+            while(_createdItems.Count > 0) {
+                RemoveItem(_createdItems[0]);
             }
         }
     }
